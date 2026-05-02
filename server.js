@@ -20,7 +20,10 @@ const corsOptions = {
   credentials: true
 };
 
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/authRoutes"));
@@ -40,3 +43,16 @@ module.exports = app;
 if (require.main === module) {
   app.listen(5000, () => console.log("Server running on port 5000"));
 }
+
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // or specific domain
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // ✅ important for preflight
+  }
+
+  next();
+});
