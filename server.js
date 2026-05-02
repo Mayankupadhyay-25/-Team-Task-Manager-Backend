@@ -5,54 +5,54 @@ require("dotenv").config();
 
 const app = express();
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (
-      !origin || 
-      origin.includes("vercel.app") ||  // ✅ ALL vercel frontend allow
-      origin === "http://localhost:3000"
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-};
 
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
-app.use(express.json());
-
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/projects", require("./routes/projectRoutes"));
-app.use("/api/tasks", require("./routes/taskRoutes"));
-
-app.get("/", (req, res) => {
-  res.send("API Running");
-});
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("DB Connected"))
-  .catch(err => console.log(err));
-
-module.exports = app;
-
-if (require.main === module) {
-  app.listen(5000, () => console.log("Server running on port 5000"));
-}
-
-
+// ✅ 1. FIRST → Manual CORS (TOP पर)
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // or specific domain
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
-    return res.sendStatus(200); // ✅ important for preflight
+    return res.status(200).end(); // 🔥 preflight fix
   }
 
   next();
 });
+
+
+// ✅ 2. THEN → cors middleware (simple)
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+
+// ✅ 3. THEN → body parser
+app.use(express.json());
+
+
+// ✅ 4. THEN → routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/projects", require("./routes/projectRoutes"));
+app.use("/api/tasks", require("./routes/taskRoutes"));
+
+
+// test route
+app.get("/", (req, res) => {
+  res.send("API Running");
+});
+
+
+// DB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("DB Connected"))
+  .catch(err => console.log(err));
+
+
+module.exports = app;
+
+
+// run server
+if (require.main === module) {
+  app.listen(5000, () => console.log("Server running on port 5000"));
+}
