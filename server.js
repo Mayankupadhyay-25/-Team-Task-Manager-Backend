@@ -5,16 +5,24 @@ require("dotenv").config();
 
 const app = express();
 
-app.use(cors({
-  origin: [
-    "https://team-task-manager-frontend-mu.vercel.app",
-    "http://localhost:3000"
-  ],
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowed = [
+      "https://team-task-manager-frontend-mu.vercel.app",
+      "http://localhost:3000"
+    ];
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
-}));
-app.options("/{*path}", cors());
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/authRoutes"));
