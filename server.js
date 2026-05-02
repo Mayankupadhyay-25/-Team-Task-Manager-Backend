@@ -7,19 +7,17 @@ const app = express();
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowed = [
-      "https://team-task-manager-frontend-mu.vercel.app",
-      "http://localhost:3000"
-    ];
-    if (!origin || allowed.includes(origin)) {
+    if (
+      !origin || 
+      origin.includes("vercel.app") ||  // ✅ ALL vercel frontend allow
+      origin === "http://localhost:3000"
+    ) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  credentials: true
 };
 
 app.use(cors(corsOptions));
